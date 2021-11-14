@@ -1,0 +1,97 @@
+\documentclass[a4paper]{article}
+
+\usepackage[margin=1in]{geometry} % full-width
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{graphicx, color}
+\usepackage[caption=false]{subfig}
+
+% Author info
+\title{Double Pendulum equations of motion and numerical results}
+\author{Victor I.  Danchev \\ \href{vidanchev@uni-sofia.bg}{vidanchev@uni-sofia.bg}}
+
+\date{
+	Sofia University St.  Kliment Ohridski \\ 
+	\today
+}
+
+\begin{document}
+	\maketitle
+	
+	\begin{abstract}
+	To be abstracted :)
+	\end{abstract}
+
+	\tableofcontents
+
+	\newpage
+	
+	\section{Introduction} \label{Intro}
+	To be introduced :)
+
+	I'll be modelling a pendulum composed of two rigid rods as opposed to point masses hanged on ropes.
+
+	\section{Equations of motion}\label{EoM}
+	\textbf{Starting with the equations as derived on paper, will fill with explanation after!}
+	
+	\subsection{The Lagrangian}\label{Lagrangian_subsection}
+	We'll define each rod $ i = \{ 1 , 2 \} $ as having length $(l_i)$, mass $(m_i)$ and moment of inertia about its center of mass ($I_{c i}$).
+	Additionally we will have the gravitational acceleration norm $g$ as a constant ($g \cong 9.8 [\mathrm{m/s^2}]$).
+	Normal vectors for the two "arms" of the pendulum are 
+	\begin{eqnarray}\label{n_1_def}
+		\hat{n}_1 &=& ( \sin{ \theta } , -\cos{ \theta } )^T \\ \label{n_2_def}
+		\hat{n}_2 &=& ( \sin{ \varphi } , - \cos{ \varphi } )^T.
+	\end{eqnarray}
+	Positions of the centre of mass for the two rods are
+	\begin{eqnarray}\label{rc_1_def}
+		\vec{r}_{c1} &=& \frac{ l_1 }{ 2 }\hat{n}_1 \\ \label{rc_2_def}
+		\vec{r}_{c2} &=& l_1 \hat{n}_1 + \frac{ l_2 }{ 2 }\hat{n}_2.
+	\end{eqnarray}
+	The Lagrangian is taken as the sum of kinetic terms minus the sum of potential terms, which gives
+	\begin{eqnarray}\label{initial_Lagrangian}
+		L = \frac{1}{2}m_1 |\dot{\vec{r}}_{c1}|^2 + \frac{1}{2}m_2 |\dot{\vec{r}}_{c2}|^2 + \frac{1}{2}I_{c1} |\vec{\omega}_{c1}|^2 + \frac{1}{2}I_{c2} |\vec{\omega}_{c2}|^2 - m_1 g y_{c1} - m_2 g y_{c2}, 
+	\end{eqnarray}
+	where $\dot{\vec{\omega}}_{ci}$ are the angular rates around the centres of mass for the two rods.
+	Note that constant terms have been neglected (since a Lagrandian is unique up to linear transformation with constants).
+	It is easy to see that $|\vec{\omega}_{c1}| = \dot{\theta}$ and $|\vec{\omega}_{c2}| = \dot{\varphi}$.
+	Also, given a homogeneous rod of mass $m$ and length $l$, the moment of inertia around its centre of mass is 
+	\begin{eqnarray}
+		I_c = \frac{1}{12}m l^2.
+	\end{eqnarray}
+	Using \eqref{n_1_def}--\eqref{rc_2_def} in \eqref{initial_Lagrangian}, one gets the full form
+	\begin{eqnarray}\label{full_form_Lagrangian}
+		L =& \left( \frac{1}{6}m_1 l_1^2 + \frac{1}{2}m_2 l_2^2 \right) \dot{\theta}^2 + \frac{1}{6}m_2 l_2^2 \dot{\varphi}^2 + \frac{1}{2}m_2 l_1 l_2 \cos( \theta - \varphi ) \dot{\theta} \dot{\varphi} \\ \nonumber
+		& + \frac{1}{2}m_1 g l_1 \cos{\theta} + m_2 g \left( l_1 \cos{\theta} + \frac{l_2}{2} \cos{\varphi} \right).
+	\end{eqnarray}
+	A lot of the clutter comes from constants, so I've chosen to simplify to
+	\begin{eqnarray}\label{simplified_Lagrangian}
+		L = a_{\theta}\dot{\theta}^2 + a_{\varphi}\dot{\varphi}^2 + a_{\mathrm{mix}}\cos( \theta - \varphi )\dot{\theta}\dot{\varphi} + b_{\theta}\cos{\theta} + b_{\varphi}\cos{\varphi},		
+	\end{eqnarray}
+	where I've defined the constants
+	\begin{eqnarray}\label{a_th_def}
+		a_{\theta} &=& \frac{1}{6}m_1 l_1^2 + \frac{1}{2}m_2 l_2^2 \\ \label{a_phi_def}
+		a_{\varphi} &=& \frac{1}{6}m_2 l_2^2 \\ \label{a_mix_def}
+		a_{\mathrm{mix}} &=& \frac{1}{2}m_2 l_1 l_2 \\ \label{b_th_def}
+		b_{\theta} &=& l_1 g \left( \frac{m_1}{2} + m_2 \right) \\ \label{b_phi_def}
+		b_{\varphi} &=& \frac{1}{2} l_2 g m_2.
+	\end{eqnarray}
+	At this point the equations of motion can be readily derived but for numerical reasons I'll switch to Hamiltonian formalism.
+	
+	\subsection{The Hamiltonian}\label{Hamiltonian_subsection}
+
+	\section{Conclussions}
+	To be concluded :)
+
+	\newpage
+	\begin{thebibliography}{9}
+
+	\bibitem{Goldstein}
+	H.~Goldstein, C.~Poole and J.~Safko, \textit{Classical Mechanics}.
+
+	\end{thebibliography}
+
+\end{document}
