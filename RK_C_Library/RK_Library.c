@@ -228,7 +228,7 @@ void RHS_Function( double* state , double* deriv_state ){
 
 }
 
-/* 4-5th order adaptive Dormand-Prince integrator - TO BE DONE */
+/* 4-5th order adaptive Dormand-Prince integrator */
 /* Inputs:
     - Nstate: number of quantities in the state (phase space dimension)
     - err_tol: error tolerance per step -> the adaptive step is modified to maintain this
@@ -377,25 +377,19 @@ void DP45_Integrator( int Nstate , double err_tol , double* state_init , double*
         err_ratio = MaxVal( err_est , Nstate )/err_tol;
 
         /* Choose whether to accept the step or not and how to pick the next step based on the err_ratio */
-        if( err_ratio < 1.0 ){
-            /* In this case the step is small enough -> we're within the error range */
+        /* NOTE: If the err_ratio is OK but we overshot the endpoint by more than err_tol, reject the step with new dt to end on it exactly! */
+        if( err_ratio < 1.0 && ( t_now + dt - *( range_int + 1 ) < err_tol ) ){
+            /* In this case the step is small enough -> we're within the error range and not yet at the end of the interval */
 
             /* In this case compute the next values and print them in the file */
             t_now += dt;
-            /* Check if we've finished the integration range (overshot outside of range_int) */
-            /* Simple linear interpolation will cut it if we did -> directly when updating the state */
-            int_frac = 1.0;
-            if( t_now > *( range_int + 1 ) ){
-                /* We'll have to interpolate between the old and new values in this case */
-                int_frac = ( *( range_int + 1 ) - t_now )/dt; /* find the fraction from current step to the end as compared to the full dt */
-                t_now = *( range_int + 1 );
-            }
+
+            /* NOTE: No need to check if we overshot since this is included in the outer if statement! */
 
             /* Update the states based on the DP coefficients of 4th order (final weights) */
-            /* NOTE: In case we overshot - weight is taken by int_frac (effectively linear interpolation) */
             for( i = 0; i < Nstate; i++ ){
                 for( j = 0; j < 7; j++ ){
-                    state_now[ i ] += DPb[ 0 ][ j ]*k_DP[ i ][ j ]*int_frac;
+                    state_now[ i ] += DPb[ 0 ][ j ]*k_DP[ i ][ j ];
                 }
             }
 
@@ -424,9 +418,18 @@ void DP45_Integrator( int Nstate , double err_tol , double* state_init , double*
 
         }
         else{
-            /* In this case the step is too large -> we must reduce it based on the estimate and threshold */
-            dt = safe_fac*dt*pow( err_ratio , p_loss );
-            rej = 1; /* Set rej to 1 in case the step was rejected */
+            /* In this case the step is too large or we overshot -> we must reduce it based on the estimate and threshold OR based on interval */
+            if( t_now + dt - *( range_int + 1 ) > err_tol ){
+                /* In this case we overshot the last step - set it to end exactly at the end of the interval */
+                dt = ( *( range_int + 1 ) - t_now );
+                rej = 0; /* If we came to this loop because of dt overshooting, we should not reject our new step */
+            }
+            else{
+                /* In this case we're still integrating, reduce the step */
+                dt = safe_fac*dt*pow( err_ratio , p_loss );
+                rej = 1; /* Set rej to 1 in case the step was rejected */
+            }
+
         }
 
         /* After a step has been completed - assign the new error ratio as old for next step */

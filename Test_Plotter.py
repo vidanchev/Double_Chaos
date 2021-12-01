@@ -80,15 +80,9 @@ if __name__ == "__main__":
     ax.plot( t_real , y_real , color = "green" , linestyle = "solid" , label = r"Real Function at $2\omega$" ) # Real function
     ax.scatter( time , phi , color = "red" , label = r"Integrated Function at $2\omega$" ) # Integrated Function
 
-    # Set labels, grid and ranges
-    #ax.set( xlabel = "x" , ylabel = "y" , title = r"Stitched function $y(x)$" )
-    #ax.grid()
-    #plt.xlim( -10.0 , 10.0 )
-    #plt.ylim( -2.0 , 2.0 )
-
     ax.legend( loc = "upper right" )
 
-    #fig.savefig( "Function_Result.pdf" )
+    #fig.savefig( "DP5_Comparison_with_real.pdf" )
     plt.show()    
 
     err_th = [ 0 ]*len( time )
@@ -103,12 +97,12 @@ if __name__ == "__main__":
     ax.plot( time , err_phi , color = "green" , linestyle = "solid" , label = r"Absolute Error at $2\omega$" )
 
     # Set labels, grid and ranges
-    #ax.set( xlabel = "x" , ylabel = "y" , title = r"Stitched function $y(x)$" )
+    ax.set( xlabel = r"t [sec]" , ylabel = r"Angle $\varphi$ or $\theta$" , title = r"Absolute Error of the DP(4-5) solver" )
     #ax.grid()
     #plt.xlim( -10.0 , 10.0 )
-    plt.ylim( - 5e-11 , 3e-10 )
+    plt.ylim( - 2e-11 , 2e-10 )
 
     ax.legend( loc = "upper right" )
 
-    #fig.savefig( "Function_Result.pdf" )
+    #fig.savefig( "DP5_Errors.pdf" )
     plt.show() 
