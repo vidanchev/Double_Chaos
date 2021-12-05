@@ -212,6 +212,7 @@ void RK4_Integrator( int Nstate , int Npoints , double* state_init , double* ran
 }
 
 /* NOTE: Currently returning 2 decoupled harmonic oscillators with \omega and 2*\omega to verify the DP integrator!!!*/
+/* NOTE: The second oscillator (at 2*\omega) has dampening by a coefficient 2.0*\beta defined in the function */
 /* Right-Hand-Side Function for the double Pendulum with properties defined above */
 /* State is assumed to be [ position , velocity ] in arbitrary units */
 /* Inputs:
@@ -221,10 +222,12 @@ void RK4_Integrator( int Nstate , int Npoints , double* state_init , double* ran
 /* TO BE REPLACED BY THE REAL RHS EVENTUALLY! */
 void RHS_Function( double* state , double* deriv_state ){
 
+    double bet = 0.2;
+
     *( deriv_state ) = *( state + 2 );
     *( deriv_state + 1 ) = *( state + 3 ); 
     *( deriv_state + 2 ) = - Om*Om*( *( state ) );
-    *( deriv_state + 3 ) = - 4.0*Om*Om*( *( state + 1 ) );
+    *( deriv_state + 3 ) = - 4.0*Om*Om*( *( state + 1 ) ) - 2.0*bet*( *( state + 3 ) );
 
 }
 
@@ -456,9 +459,9 @@ void DP45_Integrator( int Nstate , double err_tol , double* state_init , double*
 
 int main( ){
 
-    double err_tol = 1e-10;
+    double err_tol = 1e-12;
     double state_init[ 4 ] = { 1.0 , 1.0 , 0.0 , 0.0 },
-           range_int[ 2 ] = { 0.0 , 2.0*PI };
+           range_int[ 2 ] = { 0.0 , 10.0*PI };
     char test_char[ ] = "Test_Results.csv";
 
     Set_RK_Coeff( );

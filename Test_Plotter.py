@@ -67,11 +67,13 @@ if __name__ == "__main__":
 
     time, theta, phi, om_theta, om_phi = parse_data_DP( file_name )
 
-    # Testing against real solution for harmonic oscillator to make sure the integrator is OK
+    # Testing against real solution for harmonic oscillator (one is dampened) to make sure the integrator is OK
     om = 1.0
-    t_real = np.linspace( 0 , 2.0*np.pi , 100 )
+    bet = 0.2 # Dampening coefficient for the second oscillator
+    t_real = np.linspace( 0 , 10.0*np.pi , 200 )
     x_real = np.cos( om*t_real )
-    y_real = np.cos( 2.0*om*t_real ) 
+    Om2 = np.sqrt( ( 2.0*om )**2 - bet**2 ) # Frequency of the dampened oscillator
+    y_real = ( np.cos( Om2*t_real ) + ( bet/Om2 )*np.sin( Om2*t_real ) )*np.exp( - bet*t_real )
 
     # First plot - the function
     fig, ax = plt.subplots()
@@ -89,8 +91,8 @@ if __name__ == "__main__":
     err_phi = [ 0 ]*len( time )
 
     for i in range( 0 , len( time ) ):
-        err_th[ i ] = abs( ( np.cos( om*time[ i ] ) - theta[ i ] ) )
-        err_phi[ i ] = abs( ( np.cos( 2.0*om*time[ i ] ) - phi[ i ] ) )
+        err_th[ i ] = abs( np.cos( om*time[ i ] ) - theta[ i ] )
+        err_phi[ i ] = abs( ( np.cos( Om2*time[ i ] ) + ( bet/Om2 )*np.sin( Om2*time[ i ] ) )*np.exp( - bet*time[ i ] ) - phi[ i ] )
     # Second plot - the error
     fig, ax = plt.subplots()
     ax.plot( time , err_th , color = "blue" , linestyle = "solid" , label = r"Absolute Error at $\omega$" ) 
