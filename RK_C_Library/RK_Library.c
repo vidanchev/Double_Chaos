@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #define PI 3.1415926536 /* I 8 sum ... and it was delicious */
-#define Om 1.0 /* Angular frequency of the oscillator */
+#define Om 1.0 /* Angular frequency of the oscillator FOR TESTING PURPOSES */
 #define Nloop_max 1e5 /* Maximum number of iterations for the Dormand-Prince loop regardless of step */
 #define safe_fac 0.8 /* Safety factor when choosing a smaller step after rejected one */
 #define p_gain ( - 0.14 ) /* Proportional gain for step decrease (in power of error ratio) */
@@ -15,6 +15,13 @@ double DPc[ 7 ], /* Time-step coefficients {ci} from the Butcher Tableu */
        DPb[ 2 ][ 7 ], /* 4th and 5th order final weights {bi} and {b*i} from the Butcher Tableu */
        DPa[ 7 ][ 7 ], /* k computation weights {a_ij} -> Only the non-zero ones from the Butcher Tableu */
        DPec[ 7 ];  /* bi-b*i -> error coefficient constants (to avoid computation in each step) */
+
+/* Some global variables which will be used for the pendulum characteristics */
+double a_th = 1.0, /* a_{\theta} coefficient in the Lagrangian (term in front of \theta^2) */
+       a_phi = 1.0, /* a_{\varphi} coefficient in the Lagrangian (term in front of \phi^2) */
+       a_mix = 1.0, /* a_{\mix} coefficient in the Lagrangian (term in front of the mixed cosines) */
+       b_th = 1.0, /* b_{\theta} coefficient in the Lagrangian  */
+       b_phi = 1.0; /* b_{\varphi} coefficient in the Lagrangian  */
 
 /* Populate the Runge-Kutta constants for integration
  - currently hardcoded for 4-5th order Dormand Prince adaptive step with embedded error estimation */
@@ -78,6 +85,20 @@ void Set_RK_Coeff( ){
     DPa[ 6 ][ 3 ] = 125.0/192.0;
     DPa[ 6 ][ 4 ] = - 2187.0/6784.0;
     DPa[ 6 ][ 5 ] = 11.0/84.0;
+
+}
+
+/* Set the dynamic problem coefficients */
+/* Inputs:
+    - coeff_vals[ 5 ] double array contains the coefficients a_th to b_phi in sequence */
+/* NOTE: This function must be called before starting an integration or all the constants will be defaulted to 1.0 */
+void Set_Pend_coeff( double *coeff_vals ){
+
+    a_th = *( coeff_vals );
+    a_phi = *( coeff_vals + 1 );
+    a_mix = *( coeff_vals + 2 );
+    b_th = *( coeff_vals + 3 );
+    b_phi = *( coeff_vals + 4 );
 
 }
 
@@ -211,16 +232,18 @@ void RK4_Integrator( int Nstate , int Npoints , double* state_init , double* ran
 
 }
 
-/* NOTE: Currently returning 2 decoupled harmonic oscillators with \omega and 2*\omega to verify the DP integrator!!!*/
+
+/* Mockup RHS value for two decoupled harmonic oscillators - it was used for the initial testing to validate the DP integrator */
 /* NOTE: The second oscillator (at 2*\omega) has dampening by a coefficient 2.0*\beta defined in the function */
-/* Right-Hand-Side Function for the double Pendulum with properties defined above */
-/* State is assumed to be [ position , velocity ] in arbitrary units */
+/* State is assumed to be [ \theta , \phi , \omega_theta , \omega_phi ] in arbitrary units of angle and angular velocity */
 /* Inputs:
     - state[ 4 ]: the state as [ theta , phi , om_theta , om_phi ] */
 /* Outputs:
     - deriv_state[ 4 ]: the derivative of the state in the same order */
-/* TO BE REPLACED BY THE REAL RHS EVENTUALLY! */
+/*
 void RHS_Function( double* state , double* deriv_state ){
+
+    
 
     double bet = 0.2;
 
@@ -228,6 +251,49 @@ void RHS_Function( double* state , double* deriv_state ){
     *( deriv_state + 1 ) = *( state + 3 ); 
     *( deriv_state + 2 ) = - Om*Om*( *( state ) );
     *( deriv_state + 3 ) = - 4.0*Om*Om*( *( state + 1 ) ) - 2.0*bet*( *( state + 3 ) );
+
+}
+*/
+
+/* Right-Hand-Side Function for the double Pendulum with properties defined above */
+/* State is assumed to be [ \theta , \phi , \omega_theta , \omega_phi ] in arbitrary units of angle and angular velocity */
+/* Inputs:
+    - state[ 4 ]: the state as [ theta , phi , om_theta , om_phi ] */
+/* Outputs:
+    - deriv_state[ 4 ]: the derivative of the state in the same order */
+void RHS_Function( double* state , double* deriv_state ){
+
+    double invA[ 2 ][ 2 ]; /* Inverse of the LHS matrix A */
+    double rhs_vec[ 2 ]; /* RHS vector */
+    double sTh = sin( *( state ) ), /* \sin{ \theta } */
+           cTh = cos( *( state ) ), /* \cos{ \theta } */
+           sDel = sin( *( state + 1 ) - *( state ) ), /* \sin{ \phi - \theta } */
+           cDel = cos( *( state + 1 ) - *( state ) ), /* \cos{ \phi - \theta } */
+           detA = ( 4.0*a_th*a_phi - a_mix*a_mix*cDel*cDel ); /* Determinant of the Left-Hand-Side (LHS) to be inverted */
+    
+    /* Check to see if the system is close to singular and warn in that case */
+    /* NOTE: Analythically this should not be possible but check anyway in case of error in the code! */
+    if( fabs( detA ) < 1e-12 ){
+        printf( "WARNING: The system appears to be going singular at the state: \n" );
+        printf( "theta = %.10e, phi = %.10e, om_theta = %.10e, om_phi = %.10e \n" , *( state ) , *( state + 1 ) , *( state + 2 ) , *( state + 3 ) );
+        printf( "Assuming detA == 1 to continue, results after this point are WRONG!" );
+        detA = 1.0;
+    }
+
+    /* Get the inverse matrix of the LHS */
+    invA[ 0 ][ 0 ] = 2.0*a_phi/detA;
+    invA[ 0 ][ 1 ] = - a_mix*cDel/detA;
+    invA[ 1 ][ 0 ] = - a_mix*cDel/detA;
+    invA[ 1 ][ 1 ] = 2.0*a_th/detA;
+
+    rhs_vec[ 0 ] = - b_th*sTh + a_mix*sDel*( *( state + 3 ) )*( *( state + 3 ) );
+    rhs_vec[ 1 ] = - b_phi*sin( *( state + 1 ) ) - a_mix*sDel*( *( state + 2 ) )*( *( state + 2 ) );
+
+    /* Write out the derivatives */
+    *( deriv_state ) = *( state + 2 );
+    *( deriv_state + 1 ) = *( state + 3 ); 
+    *( deriv_state + 2 ) = invA[ 0 ][ 0 ]*rhs_vec[ 0 ] + invA[ 0 ][ 1 ]*rhs_vec[ 1 ];
+    *( deriv_state + 3 ) = invA[ 1 ][ 0 ]*rhs_vec[ 0 ] + invA[ 1 ][ 1 ]*rhs_vec[ 1 ];
 
 }
 
@@ -461,10 +527,12 @@ int main( ){
 
     double err_tol = 1e-12;
     double state_init[ 4 ] = { 1.0 , 1.0 , 0.0 , 0.0 },
-           range_int[ 2 ] = { 0.0 , 10.0*PI };
+           range_int[ 2 ] = { 0.0 , 10.0*PI },
+           pend_par[ 5 ] = { 0.006 , 0.0015 , 0.0045 , 0.441 , 0.147 }; /* test parameters corresponding to l_1 = l_2 = 0.3 m, m_1 = m_2 = 0.1 kg */
     char test_char[ ] = "Test_Results.csv";
 
     Set_RK_Coeff( );
+    Set_Pend_coeff( pend_par );
 
     //RK4_Integrator( 2 , Npoints , state_init , range_int , test_char , "T [time], X [pos], Y [vel]," );
     DP45_Integrator( 4 , err_tol , state_init , range_int , test_char , "T [time], Theta [rad], Phi [rad], Om_Theta [rad/s], Om_Phi [rad/s]" );

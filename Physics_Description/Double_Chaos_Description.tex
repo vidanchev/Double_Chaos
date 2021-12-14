@@ -89,13 +89,48 @@
 	where $q^i$ are the general positions (configuration space parameters) and $\dot{q}^i$ are their derivatives (general velocities).
 	The combination of all of these $\{ q^1, q^2, ... , q^N, \dot{q}^1, \dot{q}^2, ... , \dot{q}^N \}$ is the full state of the system (phase space).
 	In our case $N = 2$ and the state is $\vec{s} = ( \theta , \varphi , \dot{\theta} , \dot{\varphi} )^T$.
-	I will further denote $\dot{\theta} \def \omega_{\theta}$ and $\dot{\varphi} \def \omega_{\varphi}$.
+	I will further denote $\dot{\theta} \equiv \omega_{\theta}$ and $\dot{\varphi} \equiv \omega_{\varphi}$.
 	
 	Computing the equations \eqref{Lagrange_Equations} for the Lagrangian \eqref{simplified_Lagrangian} yields the equations of motion
 	\begin{eqnarray}\label{eom_1}
-		2 a_{\theta} \ddot{\theta} + a_{\mathrm{mix}}\cos( \varphi - \theta ) \ddot{\varphi} & = - b_{\theta}\sin{\theta} + a_{\mathrm{mix}}\sin( \varphi - \theta )\dot{\varphi}^2 \\ \label{eom_2}
-		2 a_{\varphi} \ddot{\varphi} + a_{\mathrm{mix}}\cos( \varphi - \theta ) \ddot{\theta} & = - b_{\varphi}\sin{\varphi} - a_{\mathrm{mix}}\sin( \varphi - \theta )\dot{\theta}^2
+		2 a_{\theta} \dot{\omega}_{\theta} + a_{\mathrm{mix}}\cos( \varphi - \theta ) \dot{\omega}_{\varphi} & = - b_{\theta}\sin{\theta} + a_{\mathrm{mix}}\sin( \varphi - \theta )\omega^2_{\varphi} = f_1( \mathrm{state} ) \\ \label{eom_2}
+		2 a_{\varphi} \dot{\omega}_{\varphi} + a_{\mathrm{mix}}\cos( \varphi - \theta ) \dot{\omega}_{\theta} & = - b_{\varphi}\sin{\varphi} - a_{\mathrm{mix}}\sin( \varphi - \theta )\omega^2_{\theta} = f_2( \mathrm{state} ),
 	\end{eqnarray}
+	where $\mathrm{state} \equiv ( \theta , \varphi , \omega_{\theta} , \omega_{\varphi} )^T$.
+	This can be written as a matrix equation
+	\begin{eqnarray}
+		\begin{pmatrix}
+			2 a_{\theta} & a_{\mathrm{mix}}\cos( \varphi - \theta ) \\
+			a_{\mathrm{mix}}\cos( \varphi - \theta ) & 2 a_{\varphi} 
+		\end{pmatrix} 
+		\begin{pmatrix}
+			\dot{\omega}_{\theta} \\
+			\dot{\omega}_{\varphi}
+		\end{pmatrix} 
+		& = & 
+		\begin{pmatrix}
+			f_1( \mathrm{state} ) \\
+			f_2( \mathrm{state} ).
+		\end{pmatrix}
+	\end{eqnarray}
+	Complementing with the two equations $\dot{\varphi} = \omega_{\varphi}$ and $\dot{\theta} = \omega_{\theta}$ gives us a complete 1st order system of 4 non-linear differential equations.
+	To solve it explicitly, the matrix on the left-hand-side should be invertable.
+	\begin{eqnarray}
+		A_{\mathrm{LHS}} & = &
+		\begin{pmatrix}
+			2 a_{\theta} & a_{\mathrm{mix}}\cos( \varphi - \theta ) \\
+			a_{\mathrm{mix}}\cos( \varphi - \theta ) & 2 a_{\varphi} 
+		\end{pmatrix} 
+	\end{eqnarray}
+	Looking at the determinant, the matrix will always be invertable as long as
+	\begin{eqnarray}
+		\det{ A_{\mathrm{LHS}} } = 4 a_{\theta} a_{\varphi} - a^2_{\mathrm{mix}} \cos^2( \varphi - \theta ) \neq 0.
+	\end{eqnarray}
+	Given the definitions of the constants $a$ and $b$, this statement is equivalent to
+	\begin{eqnarray}
+		\cos^2( \varphi - \theta ) \neq \frac{ 4a_{\theta} a_{\varphi} }{ a^2_{\mathrm{mix}} } = \frac{4}{3} \left( \frac{ l_2 }{ l_1 } \right)^2 \left[ 1 + \frac{m_1 l_1^2}{3 m_2 l_2^2} \right],
+	\end{eqnarray}
+	which we'll show holds for all the physical cases.
 
 	To be continued :)
 	
