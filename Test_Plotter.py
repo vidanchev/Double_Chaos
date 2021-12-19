@@ -63,11 +63,47 @@ def parse_data_DP( filename ):
 
 if __name__ == "__main__":
 
-    file_name = "RK_C_Library/Test_Results.csv"
+    file_name = "Main_Code/Test_Results.csv"
 
-    time, theta, phi, om_theta, om_phi = parse_data_DP( file_name )
+    time, theta, phi, om_theta, om_phi = parse_data_DP( file_name ) # Results from running the C code directly
+
+    file_name = "RK_C_Library/Test_Results_fromC.csv" 
+
+    time_C, theta_C, phi_C, om_theta_C, om_phi_C = parse_data_DP( file_name ) # Results from using the Python and the .so library
+
+    fig, ax = plt.subplots()
+    ax.plot( time , theta , color = "blue" , linestyle = "solid" , label = r"Lib $\theta$" )
+    ax.scatter( time_C , theta_C , color = "orange" , label = r"C $\theta$" )
+    ax.plot( time , phi , color = "green" , linestyle = "solid" , label = r"Lib $\varphi$" )
+    ax.scatter( time_C , phi_C , color = "red" , label = r"C $\varphi$" )
+
+
+    ax.legend( loc = "upper right" )
+
+    #fig.savefig( "DP5_Comparison_with_real.pdf" )
+    plt.show()  
+
+    # Check what is the absolute delta value between the two solutions as a plot  
+
+    del_theta = np.zeros( len( theta ) )
+    del_phi = np.zeros( len( theta ) )
+    for i in range( 0 , len( theta ) ):
+
+        del_theta[ i ] = ( theta[ i ] - theta_C[ i ] )
+        del_phi[ i ] = ( phi[ i ] - phi_C[ i ] )
+
+
+    fig, ax = plt.subplots()
+    ax.plot( time , del_theta , color = "red" , linestyle = "solid" , label = r"$\mathrm{abs}(\theta_C - \theta_{\mathrm{lib}})$" )
+    ax.plot( time , del_phi , color = "green" , linestyle = "solid" , label = r"$\mathrm{abs}(\varphi_C - \varphi_{\mathrm{lib}})$" )
+
+    ax.legend( loc = "upper right" )
+
+    #fig.savefig( "DP5_Comparison_with_real.pdf" )
+    plt.show() 
 
     # Testing against real solution for harmonic oscillator (one is dampened) to make sure the integrator is OK
+    '''
     om = 1.0
     bet = 0.2 # Dampening coefficient for the second oscillator
     t_real = np.linspace( 0 , 10.0*np.pi , 200 )
@@ -108,3 +144,4 @@ if __name__ == "__main__":
 
     #fig.savefig( "DP5_Errors.pdf" )
     plt.show() 
+    '''

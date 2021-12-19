@@ -1,3 +1,17 @@
+/* ---------------------------------------------------------------------------------------------------- */
+/* Library for numerical integration of ordinary differential equations, it includes adaptive-step 
+Dormand Prince 4-5th order and fixed Runge-Kutta 4th order. The RHS functions control the dynamical problem,
+the actual integrator is independent of them. Change the RHS functions to change the differential equation! */
+/* ---------------------------------------------------------------------------------------------------- */
+/*
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <vidanchev@uni-sofia.bg> wrote this file.  As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer in return. Victor Ivaylov Danchev
+ * ----------------------------------------------------------------------------
+ */
+
 #include <stdio.h>
 #include <math.h>
 #define PI 3.1415926536 /* I 8 sum ... and it was delicious */
@@ -8,7 +22,6 @@
 #define p_loss ( - 0.2 ) /* Proportional "loss" for step increase (in power of error ratio) */
 #define i_gain ( - 0.08 ) /* Integral gain for step decrease (in power of error ratio) */
 #define step_mrat 8.0 /* Maximum ratio of the new step with respect to the previous one (increase) */
-
 
 /* Some global variables which will be used for the integrators */
 double DPc[ 7 ], /* Time-step coefficients {ci} from the Butcher Tableu */
@@ -88,6 +101,42 @@ void Set_RK_Coeff( ){
 
 }
 
+/* Prinout the Runge-Kutta constants for integration to check that they are set appropriately */
+void Check_RK_Coeff( ){
+
+    int i;
+
+    printf( "DPc[ 7 ] coefficients are: " );
+    for( i = 0; i < 7; i++ ){
+        printf( "%.10e \n" , DPc[ i ] );
+    }
+
+    printf( "DPb[ 2 ][ 7 ] coefficients are ( DPb[ 0 ][ i ] , DPb[ 1 ][ i ] ): " );
+    for( i = 0; i < 7; i++ ){
+        printf( "%.10e, %.10e \n" , DPb[ 0 ][ i ] , DPb[ 1 ][ i ] );
+    }    
+
+    printf( "DPa[ 7 ][ 7 ] coefficients are ( DPa[ 0 ][ i ] , ... , DPa[ 6 ][ i ] ): " );
+    for( i = 0; i < 7; i++ ){
+        printf( "%.10e, %.10e, %.10e, %.10e, %.10e, %.10e, %.10e \n" , DPa[ 0 ][ i ] , DPa[ 1 ][ i ] , DPa[ 2 ][ i ] , DPa[ 3 ][ i ] , DPa[ 4 ][ i ] , DPa[ 5 ][ i ] , DPa[ 6 ][ i ] );
+    } 
+
+    printf( "DPec[ 7 ] coefficients are: " );
+    for( i = 0; i < 7; i++ ){
+        printf( "%.10e \n" , DPec[ i ] );
+    }  
+
+}
+
+/* Test interface to the C library from Py */
+/* Enter x value to be allocated and check that it is true */
+void Test_Interface( double x_val ){
+
+  printf( "If you're seeing this, the C function is running! \n" );
+  printf( "The provided x value is %.10e \n" , x_val );
+
+}
+
 /* Set the dynamic problem coefficients */
 /* Inputs:
     - coeff_vals[ 5 ] double array contains the coefficients a_th to b_phi in sequence */
@@ -142,7 +191,7 @@ void RHS_Function_HO( double* state , double* deriv_state ){
 /* Inputs:
     - Nstate: number of quantities in the state (phase space dimension)
     - Npoints: number of integration points (NOT INTERVALS)
-    - state_init[ dim_state ]: initial state for the integrator
+    - state_init[ Nstate ]: initial state for the integrator
     - range_int[ 2 ]: initial and final values evolution parameter (initial and final time)
     - file_name: a char of the output filename where the results will be written - include .csv in this like "file.csv"
     - header: a char of the header to start the file with (no need for \n sign) */
@@ -301,7 +350,7 @@ void RHS_Function( double* state , double* deriv_state ){
 /* Inputs:
     - Nstate: number of quantities in the state (phase space dimension)
     - err_tol: error tolerance per step -> the adaptive step is modified to maintain this
-    - state_init[ dim_state ]: initial state for the integrator
+    - state_init[ Nstate ]: initial state for the integrator
     - range_int[ 2 ]: initial and final values evolution parameter (initial and final time)
     - file_name: a char of the output filename where the results will be written - include .csv in this like "file.csv"
     - header: a char of the header to start the file with (no need for \n sign) */
@@ -521,21 +570,4 @@ void DP45_Integrator( int Nstate , double err_tol , double* state_init , double*
 
     fclose( fp ); /* Close the file in the end */
 
-}
-
-int main( ){
-
-    double err_tol = 1e-12;
-    double state_init[ 4 ] = { 1.0 , 1.0 , 0.0 , 0.0 },
-           range_int[ 2 ] = { 0.0 , 10.0*PI },
-           pend_par[ 5 ] = { 0.006 , 0.0015 , 0.0045 , 0.441 , 0.147 }; /* test parameters corresponding to l_1 = l_2 = 0.3 m, m_1 = m_2 = 0.1 kg */
-    char test_char[ ] = "Test_Results.csv";
-
-    Set_RK_Coeff( );
-    Set_Pend_coeff( pend_par );
-
-    //RK4_Integrator( 2 , Npoints , state_init , range_int , test_char , "T [time], X [pos], Y [vel]," );
-    DP45_Integrator( 4 , err_tol , state_init , range_int , test_char , "T [time], Theta [rad], Phi [rad], Om_Theta [rad/s], Om_Phi [rad/s]" );
-
-    return 0;
 }
