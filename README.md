@@ -11,6 +11,7 @@ The code and description is distributed in the following subfolders:
 
 - **Main_Code** contains the main Python file using the C shared library, individual scripts for the runs and contains all the plotting functions (**TO BE COMPLETED**):
     - **RK_Driver.py** performs all the ctypes casting and calls the shared library from **RK_C_Library** described bellow, it is imported in any other Py code.
+    - **Visualizations.py** parses the result files and holds different visualizations (2D and 3D animations)
     - **Test_Environment.py** is just a script used to test some functionalities before properly structuring the Py files
 - **Physics_Description** contains a LaTeX file which will be used to describe the physics of the problem and later contain some plots and results.
 - **RK_C_Library** contains a C file and header file with adaptive step Runge-Kutta (Dormand Prince) implementation for the double pendulum problem (**TO BE FILLED**): 

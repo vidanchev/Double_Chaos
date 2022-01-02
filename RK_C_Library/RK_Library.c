@@ -563,7 +563,8 @@ void DP45_Integrator( int Nstate , double err_tol , double* state_init , double*
 
         }
 
-        printf( "At k = %d, Time = %.10e, Error ratio is %.10e, dt = %.10e \n" , k , t_now , err_ratio , dt );
+        // This printf was used for debugging the code in the beginning
+        //printf( "At k = %d, Time = %.10e, Error ratio is %.10e, dt = %.10e \n" , k , t_now , err_ratio , dt );
 
 
     }

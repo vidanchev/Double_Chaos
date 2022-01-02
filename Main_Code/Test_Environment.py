@@ -2,6 +2,7 @@
 
 from RK_Driver import Test_Clib_Interface, Check_RK_Coeff, Set_Pend_coeff, DP45_Integrator, RK4_Integrator
 from numpy import pi
+from Visualizations import plot_2D_time, parse_results_doublep, plot_2D_phase
 
 if __name__ == "__main__":
 
@@ -18,6 +19,12 @@ if __name__ == "__main__":
 
     DP45_Integrator( err_tol , state_init , range_int , out_file , header )
 
+    time, theta, phi, om_theta, om_phi = parse_results_doublep( out_file )
+    
+    plot_2D_time( time , theta , phi , om_theta , om_phi , "0" )
+
+    plot_2D_phase( theta , phi , om_theta , om_phi , "0" )
+    
     # A test for the harmonic oscillator call from the library as well -> it must result into cosine solution -> X(t) = \cos{t}
     
-    RK4_Integrator( 100 , [ 1.0 , 0.0 ] , [ 0.0 , 2.0*pi ] , b"Test_HO.csv" , b"T [time], X [pos], V [vel]" )
+    #RK4_Integrator( 100 , [ 1.0 , 0.0 ] , [ 0.0 , 2.0*pi ] , b"Test_HO.csv" , b"T [time], X [pos], V [vel]" )
