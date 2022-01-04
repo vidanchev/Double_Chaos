@@ -1,29 +1,118 @@
-# A script for running some tests before properly structuring all the Py files
+# A script for running some tests before properly adding them to the different .py files
 
-from RK_Driver import Test_Clib_Interface, Check_RK_Coeff, Set_Pend_coeff, DP45_Integrator, RK4_Integrator
+from Visualizations import parse_results_doublep
+import matplotlib.pyplot as plt
+from matplotlib import animation
+import numpy as np
+
+def animate( i ):
+
+    x = theta[ i ]
+    y = om_theta[ i ]
+    x1.append( x )
+    y1.append( y )
+
+    x = phi[ i ]
+    y = om_phi[ i ]
+    x2.append( x )
+    y2.append( y )
+
+    xlist = [ x1 , x2 , [ theta[ i ] , phi[ i ] ] ]
+    ylist = [ y1 , y2 , [ om_theta[ i ] , om_phi[ i ] ] ]
+
+    #for index in range(0,1):
+    for lnum,line in enumerate( lines ):
+        line.set_data( xlist[ lnum ] , ylist[ lnum ] ) # set data for each line separately. 
+
+    return lines
+
+def init( ):
+    for line in lines:
+        line.set_data( [ ] , [ ] )
+    return lines
+
+# Load the file and parse the data
+out_file = "Test_Results.csv" 
+time, theta, phi, om_theta, om_phi = parse_results_doublep( out_file )
+
+fig = plt.figure( )
+ax1 = plt.axes( xlim = ( min( [ min( theta ) , min( phi ) ] ) , max( [ max( theta ) , max( phi ) ] ) ) , 
+                ylim = ( min( [ min( om_theta ) , min( om_phi ) ] ) , max( [ max( om_theta ) , max( om_phi ) ] ) ) )
+line, = ax1.plot( [ ] , [ ] , lw = 2 )
+plt.xlabel( "Angle [rad]" )
+plt.ylabel( "Angular Rates [rad/s]" )
+
+plotlays, plotcols, plotleg = [ 3 ], [ "green" , "red" , "black" ], [ r"$\theta$" , r"$\varphi$" , "" ]
+lines = []
+
+for index in range( 3 ):
+    lobj = ax1.plot( [ ] , [ ] , lw = 1 , color = plotcols[ index ] , label = plotleg[ index ] )[ 0 ]
+    lines.append( lobj )
+
+x1, y1 = [], []
+x2, y2 = [], []
+
+frame_num = len( time )
+
+#x_arr = np.linspace( 0 , 2.0*np.pi , 100 )
+#y_arr = np.sin( x_arr )
+#z_arr = np.cos( x_arr )
+
+# call the animator.  blit=True means only re-draw the parts that have changed.
+anim = animation.FuncAnimation( fig , animate , init_func = init ,
+                               frames = frame_num , interval = 1 ) #, blit=True)
+
+plt.show()
+
+'''
+from Visualizations import parse_results_doublep
+from matplotlib import animation
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import numpy as np
 from numpy import pi
-from Visualizations import plot_2D_time, parse_results_doublep, plot_2D_phase
+
+def init( ):
+    ax.set_xlim( 0 , 2*np.pi )
+    ax.set_ylim( - 1 , 1 )
+    return ln,
+
+def update( frame ):
+    xdata.append( xarr[ frame ] )
+    ydata.append( yarr[ frame ] )
+    ln.set_data( xdata , ydata )
+    return ln,
+
 
 if __name__ == "__main__":
 
-    Test_Clib_Interface( pi )
-
-    err_tol = 1e-12 # Error Tolerance
-    state_init = [ 1.0 , 1.0 , 0.0 , 0.0 ] # Initial state
-    range_int = [ 0.0 , 10.0*pi ] # Range of integration
-    pend_par = [ 0.006 , 0.0015 , 0.0045 , 0.441 , 0.147 ] # Test parameters corresponding to l_1 = l_2 = 0.3 m, m_1 = m_2 = 0.1 kg 
     out_file = b"Test_Results.csv" # Filename for the output - must be binary
-    header = b"T [time], Theta [rad], Phi [rad], Om_Theta [rad/s], Om_Phi [rad/s]" # Header for the output file
-
-    Set_Pend_coeff( pend_par )
-
-    DP45_Integrator( err_tol , state_init , range_int , out_file , header )
 
     time, theta, phi, om_theta, om_phi = parse_results_doublep( out_file )
     
-    plot_2D_time( time , theta , phi , om_theta , om_phi , "0" )
+    fig, ax = plt.subplots()
+    xdata, ydata = [], []
+    ln, = plt.plot([], [], 'r')
 
-    plot_2D_phase( theta , phi , om_theta , om_phi , "0" )
+    xarr = np.linspace( 0 , 2*pi , 128 )
+    yarr = np.sin( xarr )
+
+    i_fr = [0]*128
+    for i in range( 0 , 128 ):
+        i_fr[ i ] = i
+
+    ani = FuncAnimation( fig , update , frames = i_fr , init_func = init , blit = True , interval = 50 )
+
+    #ani.save( "animation.gif" )
+
+    plt.show()
+
+'''
+
+    #plot_2D_time( time , theta , phi , om_theta , om_phi , "0" )
+
+    #plot_2D_phase( theta , phi , om_theta , om_phi , "0" )
     
     # A test for the harmonic oscillator call from the library as well -> it must result into cosine solution -> X(t) = \cos{t}
     

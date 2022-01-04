@@ -154,3 +154,33 @@ def plot_2D_phase( theta , phi , om_theta , om_phi , file_name ):
         fig.savefig( fname , format = "pdf" )
     
     plt.show()  
+
+# Make a 2D plot of the total system energy as a function of time
+# Inputs:
+# - time[ N ]: time array [sec] assumed
+# - e_kin[ N ]: kinetic energy in [J]
+# - e_pot[ N ]: potential energy in [J]
+# Output:
+# - Show 2 plots (of the position and of the time) with the given assumed scales
+# - Optionally save the figures based on the names provided
+def plot_energy( time , e_kin , e_pot , file_name ):
+
+    e_tot = np.array( e_kin ) + np.array( e_pot )
+    fig, ax = plt.subplots()
+    ax.plot( time , e_kin , color = "green" , linestyle = "solid" , label = r"$E_k(t)$" )
+    ax.plot( time , e_pot , color = "red" , linestyle = "solid" , label = r"$U(t)$" )
+    ax.plot( time , e_tot , color = "blue" , linestyle = "solid" , label = r"$E_{\mathrm{tot}}(t)$" )
+
+    ax.set_xlabel( r"time [sec]" )
+    ax.set_ylabel( r"Energy in [J]" )
+
+    ax.legend( loc = "upper right" )
+
+    #ax.set_ylim( 0.0 , pi/2.0 )
+    plt.grid( True )
+
+    if file_name != "0":
+        fname = "Energy_" + file_name + ".pdf"
+        fig.savefig( fname , format = "pdf" )
+    
+    plt.show()
