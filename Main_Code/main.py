@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib import animation
 import matplotlib.pyplot as plt
 from Visualizations import plot_2D_time, parse_results_doublep, plot_2D_phase, plot_energy
+from scipy import interpolate
 
 # Get the integrator parameters and constants based on physical pendulum dimensions
 # Inputs:
@@ -33,6 +34,13 @@ def get_int_params( l1 , l2 , m1 , m2 , g_acc ):
 # - Outputs the anim lines 
 def animate_phys( i ):
 
+    # If we reach the end of the loop - start over
+    if i == 0:
+        x1.clear( )
+        y1.clear( )
+        x2.clear( )
+        y2.clear( )
+    
     # Append the latest values for both points
     x1.append( x_mid[ i ] )
     y1.append( y_mid[ i ] + ltot )
@@ -55,7 +63,6 @@ def init_phys( ):
         line.set_data( [ ] , [ ] )
     return lines
 
-
 if __name__ == "__main__":
 
     #########################################################
@@ -63,15 +70,15 @@ if __name__ == "__main__":
     #########################################################
     l1 = 0.3 # in [m]
     l2 = 0.3 # in [m]
-    m1 = 0.3 # in [kg]
-    m2 = 0.3 # in [kg]
+    m1 = 0.1 # in [kg]
+    m2 = 0.1 # in [kg]
     g_acc = 9.8 # gravitational acceleration in [m/s^2]
     #########################################################
     # Simulation Initial and Accuracy Parameters to modify
     #########################################################
     err_tol = 1e-12 # Error Tolerance for the integrator
-    range_int = [ 0.0 , 3.0*pi ] # Time range of integration in [sec]
-    state_init = [ 1.0 , 1.0 , 0.0 , 0.0 ] # Initial state [ theta_0 , phi_0 , om_th_0 , om_phi_0 ]
+    range_int = [ 0.0 , 6.0*pi ] # Time range of integration in [sec]
+    state_init = [ 1.0 , pi , 0.0 , 0.0 ] # Initial state [ theta_0 , phi_0 , om_th_0 , om_phi_0 ]
     #########################################################
     # Output File details
     #########################################################
@@ -95,11 +102,8 @@ if __name__ == "__main__":
     e_kin = [ 0 ]*len( time )
     e_pot = [ 0 ]*len( time )
     for j in range( 0 , len( time ) ):
-        e_kin[ j ] = pend_par[ 0 ]*theta[ j ]*theta[ j ] + pend_par[ 1 ]*phi[ j ]*phi[ j ] + pend_par[ 2 ]*np.cos( phi[ j ] - theta[ j ] )*om_theta[ j ]*om_phi[ j ]
+        e_kin[ j ] = pend_par[ 0 ]*om_theta[ j ]*om_theta[ j ] + pend_par[ 1 ]*om_phi[ j ]*om_phi[ j ] + pend_par[ 2 ]*np.cos( phi[ j ] - theta[ j ] )*om_theta[ j ]*om_phi[ j ]
         e_pot[ j ] = - pend_par[ 3 ]*np.cos( theta[ j ] ) - pend_par[ 4 ]*np.cos( phi[ j ] )
-
-    print( "E_kin len is " + str( len( e_kin ) ) )
-    print( "E_pot len is " + str( len( e_pot ) ) )
     
     #########################################################
     # Static plot of some of the results
@@ -110,7 +114,6 @@ if __name__ == "__main__":
     plot_2D_phase( theta , phi , om_theta , om_phi , "0" )
     # - 2D static plot of the energy as a function of time -> change last param to save as .pdf
     plot_energy( time , e_kin , e_pot , "0" )
-    # ERROR DISCOVERED BASED ON THE ENERGY PLOT -> MUST BE A CONSTANT!
     #########################################################
 
     #########################################################
@@ -118,13 +121,25 @@ if __name__ == "__main__":
     #########################################################
 
     # Convert to physical positions of the end points of the first and second pendulum
-    x_mid = l1*np.sin( theta )
-    y_mid = - l1*np.cos( theta )
-    x_end = x_mid + l2*np.sin( phi )
-    y_end = y_mid - l2*np.cos( phi )
+    x_mid_0 = l1*np.sin( theta )
+    y_mid_0 = - l1*np.cos( theta )
+    x_end_0 = x_mid_0 + l2*np.sin( phi )
+    y_end_0 = y_mid_0 - l2*np.cos( phi )
 
-    # NOTE: These should be interpolated uniformly to make a nice plot
+    # Create a uniform time array with the range of time and points corresponding to roughly 100 per second of physical time
+    time_int = np.linspace( min( time ) , max( time ) , 100*int( max( time ) ) )
+    # Create the tck handles for the different functions
+    tck_xmid = interpolate.splrep( time , x_mid_0 , s = 0 )
+    tck_ymid = interpolate.splrep( time , y_mid_0 , s = 0 )
+    tck_xend = interpolate.splrep( time , x_end_0 , s = 0 )
+    tck_yend = interpolate.splrep( time , y_end_0 , s = 0 )
 
+    # Interpolate with the points based on time_int 
+    x_mid = interpolate.splev( time_int , tck_xmid , der = 0 )
+    y_mid = interpolate.splev( time_int , tck_ymid , der = 0 )
+    x_end = interpolate.splev( time_int , tck_xend , der = 0 )
+    y_end = interpolate.splev( time_int , tck_yend , der = 0 )
+    
     fig = plt.figure( )
     ax1 = plt.axes( xlim = ( min( [ min( x_end ) , min( x_mid ) ] ) - 0.1 , max( [ max( x_end ) , max( x_mid ) ] ) + 0.1 ) , 
                     ylim = ( - 0.1 , max( [ max( y_end ) , l1 + l2 ] ) + 0.1 ) )
@@ -142,10 +157,13 @@ if __name__ == "__main__":
     x1, y1 = [], []
     x2, y2 = [], []
 
-    frame_num = len( time )
+    frame_num = len( time_int )
 
     # Call the animator, blit=True means only re-draw the parts that have changed
-    anim = animation.FuncAnimation( fig , animate_phys , init_func = init_phys , frames = frame_num , interval = 1 , blit = True )
+    anim = animation.FuncAnimation( fig , animate_phys , init_func = init_phys , frames = frame_num , interval = 10 , blit = True )
+
+    # Currently gif comes out huge, should reduce its size
+    #anim.save( "Test_Gif.gif" , writer = animation.PillowWriter( fps = 60 ) )
 
     plt.show()
     #########################################################

@@ -9,14 +9,14 @@ I envision reusing it for future projects as well.
 ## Code Structure
 The code and description is distributed in the following subfolders:
 
-- **Main_Code** contains the main Python file using the C shared library, individual scripts for the runs and contains all the plotting functions (**TO BE COMPLETED**):
+- **Main_Code** contains the main Python file using the C shared library, individual scripts for the runs and contains all the plotting functions:
+    - **main.py** is the main code where a run parameters are defined and the integration + plotting is called, it also contains the animation for making the actual pendulum visualization (not the static plots).
     - **RK_Driver.py** performs all the ctypes casting and calls the shared library from **RK_C_Library** described bellow, it is imported in any other Py code.
     - **Visualizations.py** parses the result files and holds different visualizations (2D and 3D animations)
     - **Test_Environment.py** is just a script used to test some functionalities before properly structuring the Py files
 - **Physics_Description** contains a LaTeX file which will be used to describe the physics of the problem and later contain some plots and results.
-- **RK_C_Library** contains a C file and header file with adaptive step Runge-Kutta (Dormand Prince) implementation for the double pendulum problem (**TO BE FILLED**): 
-    - **RK_Library.c** contains the RK library which will be used for integration of the dynamical equations. Eventually this will be closed as a standalone library. Currently it contains a Dormand-Prince O(4-5) intrinsic adaptive method but a RK(4) was also used for verification purposes (still in progress). 
-    **NOTE:** the library is virtually done but needs some more verification - currently there is a printout of the results on each step which will be hidden.
+- **RK_C_Library** contains a C file and header file with adaptive step Runge-Kutta (Dormand Prince) implementation for the double pendulum problem: 
+    - **RK_Library.c** contains the RK library which will be used for integration of the dynamical equations. Eventually this will be closed as a standalone library. Currently it contains a Dormand-Prince O(4-5) intrinsic adaptive method but a RK(4) was also used for verification purposes. 
 - **Test_Plotter.py** contains some parsers and plotters for experimental files which will be used while verifying the RK library.
 
 **NOTE:** Currently there are several testing .csv files which compare results with harmonic oscillator and between the original C code nad the now shared library, these will be deleted later but are used for verification purposes.

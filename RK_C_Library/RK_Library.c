@@ -322,7 +322,7 @@ void RHS_Function( double* state , double* deriv_state ){
     
     /* Check to see if the system is close to singular and warn in that case */
     /* NOTE: Analythically this should not be possible but check anyway in case of error in the code! */
-    if( fabs( detA ) < 1e-12 ){
+    if( fabs( detA ) < 1e-15 ){
         printf( "WARNING: The system appears to be going singular at the state: \n" );
         printf( "theta = %.10e, phi = %.10e, om_theta = %.10e, om_phi = %.10e \n" , *( state ) , *( state + 1 ) , *( state + 2 ) , *( state + 3 ) );
         printf( "Assuming detA == 1 to continue, results after this point are WRONG!" );
