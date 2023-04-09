@@ -38,3 +38,12 @@ Where <cfile.c> = **RK_Library.c** and <libname.so> should be the name which you
 
 **NOTE:** You may also have to recompile the library in case you are running on a different system. I am using Mac so the extension is **.so**, which is also valid for Linux, under Windows that would be a **.lib** file.
 
+## Compiling on Windows
+First, you'll need to install **MinGW** on your Windows system.
+
+Alternatvely, you can use **MSVC** toolchain, but there are some compatibility issues to be aware of when using ctypes with MSVC-compiled libraries. MSVC uses a different calling convention than the standard C calling convention, which can cause problems when calling functions from Python. To work around this issue, you can use the **__stdcall** calling convention for functions that you want to call from Python.
+In addition, MSVC also uses a different name mangling scheme than other compilers, which can cause problems when trying to locate functions in shared libraries. To work around this issue, you can use the **ctypes.WinDLL()** function to load the library, which uses a different name mangling algorithm that is compatible with MSVC.
+
+With MinGW installed, you can compile the library using the same command for Unix systems:
+
+    gcc -shared -o <libname.dll> -fPIC <cfile.c>

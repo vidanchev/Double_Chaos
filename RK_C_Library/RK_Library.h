@@ -10,24 +10,36 @@ Modify accordingly if you are modifying the RK_Library.c RHS functions to change
  * this stuff is worth it, you can buy me a beer in return. Victor Ivaylov Danchev
  * ----------------------------------------------------------------------------
  */
+#ifndef RK_LIBRARY_H
+#define RK_LIBRARY_H
+
+#ifdef __cplusplus
+extern "C" { // only need to export C interface if used by C++ code
+#endif
+
+#ifdef _WIN32 // compiling on Windows
+    #define EXPORT __declspec(dllexport)
+#else // compiling on Linux and MacOS
+    #define EXPORT __attribute__((visibility("default")))
+#endif
 
 /* Test interface to the C library from Py */
 /* Enter x value to be allocated and check that it is true */
-void Test_Interface( double x_val );
+EXPORT void Test_Interface( double x_val );
 
 /* Populate the Runge-Kutta constants for integration
  - currently hardcoded for 4-5th order Dormand Prince adaptive step with embedded error estimation */
 /* NOTE: Must be performed before any integrations with Dormand-Prince are performed!!! */
-void Set_RK_Coeff( );
+EXPORT void Set_RK_Coeff( );
 
 /* Prinout the Runge-Kutta constants for integration to check that they are set appropriately */
-void Check_RK_Coeff( );
+EXPORT void Check_RK_Coeff( );
 
 /* Set the dynamic problem coefficients */
 /* Inputs:
     - coeff_vals[ 5 ] double array contains the coefficients a_th to b_phi in sequence */
 /* NOTE: This function must be called before starting an integration or all the constants will be defaulted to 1.0 */
-void Set_Pend_coeff( double *coeff_vals );
+EXPORT void Set_Pend_coeff( double *coeff_vals );
 
 /* Simple max value finder */
 /* Inputs:
@@ -57,7 +69,7 @@ void RHS_Function_HO( double* state , double* deriv_state );
     - The results are written in a file as commas separated values (.csv)
     -- The format is [ Time , State[ 0 ] , State[ 1 ] , ... State[ Nstate - 1 ] ]
     -- Reflect this in the header format! */
-void RK4_Integrator( int Nstate , int Npoints , double* state_init , double* range_int , char* file_name , char* header );
+EXPORT void RK4_Integrator( int Nstate , int Npoints , double* state_init , double* range_int , char* file_name , char* header );
 
 /* Mockup RHS value for two decoupled harmonic oscillators - it was used for the initial testing to validate the DP integrator */
 /* NOTE: The second oscillator (at 2*\omega) has dampening by a coefficient 2.0*\beta defined in the function */
@@ -90,4 +102,10 @@ void RHS_Function( double* state , double* deriv_state );
     - The results are written in a file as commas separated values (.csv)
     -- The format is [ Time , State[ 0 ] , State[ 1 ] , ... State[ Nstate - 1 ] ]
     -- Reflect this in the header format! */
-void DP45_Integrator( int Nstate , double err_tol , double* state_init , double* range_int , char* file_name , char* header );
+EXPORT void DP45_Integrator( int Nstate , double err_tol , double* state_init , double* range_int , char* file_name , char* header );
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* RK_LIBRARY_H */
